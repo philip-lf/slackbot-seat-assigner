@@ -13,21 +13,66 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
     for (const c of rtmStartData.channels) {
         if (c.is_member && c.name === 'philip-testing') { channel = c.id; console.log(chalk.bgGreen(c.name)) }
     }
-    console.log(`Logged in as ${rtmStartData.self.name} of team ${rtmStartData.team.name}`);
+    //rtmStartData.self.name === 'seat-assigner'
+    //rtmStartData.team.name === 'Fullstack Academy'
+    console.log(`Logged in!`);
 });
 
-// Message that Bot will post in Slack
-// rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, function () {
-//     rtm.sendMessage("wazzup!", channel);  
-// });
+// Array of locations available for students to sit
+const locations = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
 
-rtm.on(RTM_EVENTS.MESSAGE, function(message) {
+// source ==> https://www.kirupa.com/html5/shuffling_array_js.htm
+function arrayShuffle(arr) {
+    for (var i = arr.length - 1; i >= 0; i--) {
+
+        var randomIndex = Math.floor(Math.random() * (i + 1));
+        var itemAtIndex = arr[randomIndex];
+
+        arr[randomIndex] = arr[i];
+        arr[i] = itemAtIndex;
+    }
+    return arr;
+}
+
+function handleStudents(text) {
+    const shuffledArr = arrayShuffle(locations)
+    // number of pairs - number
+    var pairs = text.split('\n\n')
+
+    // number of students per pair - array
+    var studentsPerPair = text.split('\n\n').map(pair => {
+        return pair.split('\n').length
+    })
+
+    // student names per pair - array
+    var studentNamesPerPair = text.split('\n\n').map((pair, i) => {
+        return shuffledArr[i] + ' - ' + pair.split('\n').join(' && ')
+    })
+
+    // array of students 
+    var arrayOfStudents = text.split('\n\n').join('\n').split('\n')
+
+    return {
+        pairs,
+        studentsPerPair,
+        studentNamesPerPair,
+        arrayOfStudents
+    }
+}
+
+rtm.on(RTM_EVENTS.MESSAGE, function (message) {
     if (message.channel === channel)
         console.log(message)
-        // const response = message.user === 'U6DMFKVT8' ? true : false  
-        if(message.user === 'U6DMFKVT8') { // if the sender is me or not
-            rtm.sendMessage(`I can now respond with only my messages:\n ${message.text} !!`, message.channel);
-        }
+
+    const data = handleStudents(message.text)
+
+    if (message.user === 'U6DMFKVT8') { // if the sender is me then send message
+        rtm.sendMessage(
+            `# of PAIRS: ${data.pairs.length}\n
+            STUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n
+            # OF STUDENTS\n${data.arrayOfStudents.length}`,
+            message.channel);
+    }
 });
 
 // LearnBot APP [11:03 AM] 
