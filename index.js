@@ -2,8 +2,9 @@ var RtmClient = require('@slack/client').RtmClient; //bot object that references
 var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS; //events that i can dispatch
 var RTM_EVENTS = require('@slack/client').RTM_EVENTS; //events that the bot will be listening for
 var chalk = require('chalk')
+var axios = require('axios')
 
-var rtm = new RtmClient(require('./secret')); // API token
+var rtm = new RtmClient('xoxb-267397249860-hVeZvJiMN5f21TOfVGbZ9NpN'); // API token
 
 rtm.start();
 
@@ -19,7 +20,7 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
 });
 
 // Array of locations available for students to sit
-const locations = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+const locations = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
 
 // source ==> https://www.kirupa.com/html5/shuffling_array_js.htm
 function arrayShuffle(arr) {
@@ -67,11 +68,19 @@ rtm.on(RTM_EVENTS.MESSAGE, function (message) {
     const data = handleStudents(message.text)
 
     if (message.user === 'U6DMFKVT8') { // if the sender is me then send message
-        rtm.sendMessage(
-            `# of PAIRS: ${data.pairs.length}\n
-            STUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n
-            # OF STUDENTS\n${data.arrayOfStudents.length}`,
-            message.channel);
+        // rtm.sendMessage(`# of PAIRS: ${data.pairs.length}\nSTUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n# OF STUDENTS\n${data.arrayOfStudents.length}`,
+        //     message.channel);
+        // rtm.sendMessage({"text": "doggggg"}, message.channel)
+        // rtm.send({ "text": "dogggg" }, message.channel)
+
+        rtm.send(axios.post('https://hooks.slack.com/services/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', {
+            "text": `# of PAIRS: ${data.pairs.length}\nSTUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n# OF STUDENTS\n${data.arrayOfStudents.length}`,
+            "attachments": [{
+                "color": "good",
+                "title": "Seating Chart",
+                "image_url": "https://i.imgur.com/g4Z1XPg.jpg"
+            }]
+        }))
     }
 });
 
