@@ -30,7 +30,7 @@ function arrayShuffle(arr) {
     return arr;
 }
 
-// make array with all locations based on the number of students
+// make array with all locations based on the number of pairs
 function makeArr(num) {
     let arr = []
     for (var i = 0; i <= num; i++) {
@@ -83,7 +83,7 @@ function handleStudents(text) {
     // })
 
     var studentNamesPerPair = text.split('\n\n').map((pair, i) => {
-        return shuffledArr[i] + ' - ' + pair.split('\n').join(' && ')
+        return shuffledArr[i] + '-------------\n' + pair.split('\n').join('\n')
     })
 
     return {
@@ -100,14 +100,12 @@ rtm.on(RTM_EVENTS.MESSAGE, function (message) {
 
     const data = handleStudents(message.text)
 
-    if (message.user === 'U6DMFKVT8') { // if the sender is me then send message
-        // rtm.sendMessage(`# of PAIRS: ${data.pairs.length}\nSTUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n# OF STUDENTS\n${data.arrayOfStudents.length}`,
-        //     message.channel);
-        // rtm.sendMessage({"text": "doggggg"}, message.channel)
+    if (message.user === 'U6DMFKVT8') {
+        // rtm.sendMessage(`# of PAIRS: ${data.pairs.length}\nSTUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n# OF STUDENTS\n${data.arrayOfStudents.length}`, message.channel);
         // rtm.send({ "text": "dogggg" }, message.channel)
 
         rtm.send(axios.post('https://hooks.slack.com/services/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', {
-            "text": `LOCATIONS PER PAIR\n${data.studentNamesPerPair.join('\n\n')}`,
+            "text": `PAIR LOCATIONS\n${data.studentNamesPerPair.join('\n\n')}`,
             "attachments": [{
                 "color": "good",
                 "title": "Seating Chart",
