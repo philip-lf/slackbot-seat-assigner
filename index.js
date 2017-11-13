@@ -3,9 +3,7 @@ var CLIENT_EVENTS = require('@slack/client').CLIENT_EVENTS; //events that i can 
 var RTM_EVENTS = require('@slack/client').RTM_EVENTS; //events that the bot will be listening for
 var chalk = require('chalk')
 var axios = require('axios')
-
 var rtm = new RtmClient(require('./secret')); // API token
-
 rtm.start();
 
 let channel;
@@ -41,41 +39,51 @@ function makeArr(num) {
     return arr
 }
 
-function isEven(num) {
-    if(num % 2 === 0) return true
-}
+ //USED FOR INDIVIDUAL STUDENTS, BUT NOT WORKING
+// Array.prototype.remove = function() {
+//     var what, a = arguments, L = a.length, ax;
+//     while (L && this.length) {
+//         what = a[--L];
+//         while ((ax = this.indexOf(what)) !== -1) {
+//             this.splice(ax, 1);
+//         }
+//     }
+//     return this;
+// };
 
 function handleStudents(text) {
 
     // array of students 
     var arrayOfStudents = text.split('\n\n').join('\n').split('\n')
 
-    let originalArr = makeArr(arrayOfStudents.length)
-
-    const shuffledArr = arrayShuffle(originalArr)
-
     // number of pairs - number
     var pairs = text.split('\n\n')
+
+    let originalArr = makeArr(pairs.length)
+
+    const shuffledArr = arrayShuffle(originalArr)
 
     // number of students per pair - array
     var studentsPerPair = text.split('\n\n').map(pair => {
         return pair.split('\n').length
     })
 
+    // NOT WORKING FOR INDIVIDUAL STUDENTS
+    // var studentNamesPerPair = text.split('\n\n').map((pair, i) => {
+    //     const peopleInPair = pair.split('\n')
+    //     let currentArrNumber = shuffledArr[i]
+
+    //     for (let x = 0; x < peopleInPair.length; x++) {   // for each pair
+    //         peopleInPair[x] = currentArrNumber + ' - ' + peopleInPair[x]
+    //         currentArrNumber++
+    //     }
+    //     shuffledArr.remove(currentArrNumber)
+
+    //     return peopleInPair.join('\n')
+    // })
+
     var studentNamesPerPair = text.split('\n\n').map((pair, i) => {
-        var arr = []
-
-        if(isEven(i)) {
-            arr.push(shuffledArr[i] + '-' + pair.split('\n')[0])
-            arr.push((shuffledArr[i] + 1) + '-' + pair.split('\n')[1])
-        } else {
-            arr.push((shuffledArr[i] + 1) + '-' + pair.split('\n')[0])
-            arr.push(shuffledArr[i] + '-' + pair.split('\n')[1])
-        }
-        shuffledArr.splice(i, 1)
-        shuffledArr.splice(i + 1, 1)
-
-        return arr.join('\n')
+        return shuffledArr[i] + ' - ' + pair.split('\n').join(' && ')
     })
 
     return {
@@ -99,75 +107,16 @@ rtm.on(RTM_EVENTS.MESSAGE, function (message) {
         // rtm.send({ "text": "dogggg" }, message.channel)
 
         rtm.send(axios.post('https://hooks.slack.com/services/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', {
-            "text": `STUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n# OF STUDENTS\n${data.arrayOfStudents.length}`,
+            "text": `LOCATIONS PER PAIR\n${data.studentNamesPerPair.join('\n\n')}`,
             "attachments": [{
                 "color": "good",
                 "title": "Seating Chart",
-                "image_url": "https://i.imgur.com/g4Z1XPg.jpg"
+                "image_url": "https://i.imgur.com/2u0N1Ud.jpg"
             }]
         }))
+        .catch(err => console.log(err))
     }
 });
 
 // LearnBot APP [11:03 AM] 
 // *@channel Pairs for Auther: Authentication Data Flow*
-// Adrien Lacquemant
-// Silun Zhang
-
-// Jerry Muzsik
-// Kenny Diaz
-
-// Bobby Lux
-// Daniel Cruser
-
-// John Pepino
-// Seth Feibus
-
-// Evans Alexis Stepanov
-// Kyle Uehlein
-
-// Bryan Le
-// Philip Fahim
-
-// Samuel Yun
-// Sol Park
-
-// Hsiangkai Liu
-// Mueed Chaudhry
-
-// Alex Villarreal
-// Andrew Ziegler
-
-// Mariel Werner
-// Rian Halperin
-
-// Mitchell Stewart
-// Nicholas Galarza
-
-// Daniel Bernard
-// Simon Chan
-// Xi Qin
-
-// Arthur Swieckowski
-// Hou In Choi
-
-// Carmen Peralta
-// Eric Garnett
-
-// Andrey Ivanov
-// Veekas Shrivastava
-
-// Allison Zhao
-// Douglas Chin
-
-// Claire Liu
-// James O'Reilly
-
-// Brian Macdonald
-// Michael Romani
-
-// Eren Erdogan
-// Rohan Saigal
-
-// Aaron Wong
-// Zhe Hua
