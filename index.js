@@ -4,7 +4,7 @@ var RTM_EVENTS = require('@slack/client').RTM_EVENTS; //events that the bot will
 var chalk = require('chalk')
 var axios = require('axios')
 
-var rtm = new RtmClient('xoxb-267397249860-hVeZvJiMN5f21TOfVGbZ9NpN'); // API token
+var rtm = new RtmClient(require('./secret')); // API token
 
 rtm.start();
 
@@ -19,9 +19,6 @@ rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (rtmStartData) => {
     console.log(`Logged in!`);
 });
 
-// Array of locations available for students to sit
-const locations = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
-
 // source ==> https://www.kirupa.com/html5/shuffling_array_js.htm
 function arrayShuffle(arr) {
     for (var i = arr.length - 1; i >= 0; i--) {
@@ -35,8 +32,28 @@ function arrayShuffle(arr) {
     return arr;
 }
 
+// make array with all locations based on the number of students
+function makeArr(num) {
+    let arr = []
+    for (var i = 0; i <= num; i++) {
+        arr.push(i)
+    }
+    return arr
+}
+
+function isEven(num) {
+    if(num % 2 === 0) return true
+}
+
 function handleStudents(text) {
-    const shuffledArr = arrayShuffle(locations)
+
+    // array of students 
+    var arrayOfStudents = text.split('\n\n').join('\n').split('\n')
+
+    let originalArr = makeArr(arrayOfStudents.length)
+
+    const shuffledArr = arrayShuffle(originalArr)
+
     // number of pairs - number
     var pairs = text.split('\n\n')
 
@@ -45,13 +62,21 @@ function handleStudents(text) {
         return pair.split('\n').length
     })
 
-    // student names per pair - array
     var studentNamesPerPair = text.split('\n\n').map((pair, i) => {
-        return shuffledArr[i] + ' - ' + pair.split('\n').join(' && ')
-    })
+        var arr = []
 
-    // array of students 
-    var arrayOfStudents = text.split('\n\n').join('\n').split('\n')
+        if(isEven(i)) {
+            arr.push(shuffledArr[i] + '-' + pair.split('\n')[0])
+            arr.push((shuffledArr[i] + 1) + '-' + pair.split('\n')[1])
+        } else {
+            arr.push((shuffledArr[i] + 1) + '-' + pair.split('\n')[0])
+            arr.push(shuffledArr[i] + '-' + pair.split('\n')[1])
+        }
+        shuffledArr.splice(i, 1)
+        shuffledArr.splice(i + 1, 1)
+
+        return arr.join('\n')
+    })
 
     return {
         pairs,
@@ -74,7 +99,7 @@ rtm.on(RTM_EVENTS.MESSAGE, function (message) {
         // rtm.send({ "text": "dogggg" }, message.channel)
 
         rtm.send(axios.post('https://hooks.slack.com/services/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', {
-            "text": `# of PAIRS: ${data.pairs.length}\nSTUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n# OF STUDENTS\n${data.arrayOfStudents.length}`,
+            "text": `STUDENT NAMES PER PAIR\n${data.studentNamesPerPair.join('\n\n')}\n# OF STUDENTS\n${data.arrayOfStudents.length}`,
             "attachments": [{
                 "color": "good",
                 "title": "Seating Chart",
